@@ -29,8 +29,8 @@ export function InvoiceForm({ kind }: { kind: Kind }) {
   const parties = useQuery({
     queryKey: ["parties-active", kind],
     queryFn: async () => {
-      const t = kind === "sales" ? ["customer", "both"] : ["supplier", "both"];
-      return (await supabase.from("parties").select("id, name, currency_code").in("type", t).eq("is_active", true)).data ?? [];
+      const types = kind === "sales" ? ["customer", "both"] : ["supplier", "both"];
+      return (await supabase.from("parties").select("id, name, currency_code").in("type", types as any).eq("is_active", true)).data ?? [];
     },
   });
   const branches = useQuery({
@@ -81,7 +81,7 @@ export function InvoiceForm({ kind }: { kind: Kind }) {
         total: totals.total,
         notes,
       };
-      const { data: inv, error } = await supabase.from(table).insert(invRow).select().single();
+      const { data: inv, error } = await (supabase.from(table as any) as any).insert(invRow).select().single();
       if (error) throw error;
       const lineRows = lines.filter((l) => l.description && (l.qty > 0)).map((l, i) => ({
         invoice_id: inv.id,
@@ -94,7 +94,7 @@ export function InvoiceForm({ kind }: { kind: Kind }) {
         line_no: i + 1,
       }));
       if (lineRows.length === 0) throw new Error("No lines");
-      const ins = await supabase.from(linesTable).insert(lineRows);
+      const ins = await (supabase.from(linesTable as any) as any).insert(lineRows);
       if (ins.error) throw ins.error;
       if (post) {
         const { error: pErr } = await supabase.rpc(rpc as any, { _invoice_id: inv.id });

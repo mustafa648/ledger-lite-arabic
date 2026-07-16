@@ -12,10 +12,15 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedPartiesRouteImport } from './routes/_authenticated/parties'
 import { Route as AuthenticatedLedgerRouteImport } from './routes/_authenticated/ledger'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAccountsRouteImport } from './routes/_authenticated/accounts'
+import { Route as AuthenticatedSalesIndexRouteImport } from './routes/_authenticated/sales.index'
+import { Route as AuthenticatedPurchasesIndexRouteImport } from './routes/_authenticated/purchases.index'
 import { Route as AuthenticatedJournalIndexRouteImport } from './routes/_authenticated/journal.index'
+import { Route as AuthenticatedSalesNewRouteImport } from './routes/_authenticated/sales.new'
+import { Route as AuthenticatedPurchasesNewRouteImport } from './routes/_authenticated/purchases.new'
 import { Route as AuthenticatedJournalNewRouteImport } from './routes/_authenticated/journal.new'
 import { Route as AuthenticatedJournalIdRouteImport } from './routes/_authenticated/journal.$id'
 
@@ -33,6 +38,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedPartiesRoute = AuthenticatedPartiesRouteImport.update({
+  id: '/parties',
+  path: '/parties',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedLedgerRoute = AuthenticatedLedgerRouteImport.update({
   id: '/ledger',
   path: '/ledger',
@@ -48,10 +58,32 @@ const AuthenticatedAccountsRoute = AuthenticatedAccountsRouteImport.update({
   path: '/accounts',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSalesIndexRoute = AuthenticatedSalesIndexRouteImport.update({
+  id: '/sales/',
+  path: '/sales/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPurchasesIndexRoute =
+  AuthenticatedPurchasesIndexRouteImport.update({
+    id: '/purchases/',
+    path: '/purchases/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedJournalIndexRoute =
   AuthenticatedJournalIndexRouteImport.update({
     id: '/journal/',
     path: '/journal/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSalesNewRoute = AuthenticatedSalesNewRouteImport.update({
+  id: '/sales/new',
+  path: '/sales/new',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPurchasesNewRoute =
+  AuthenticatedPurchasesNewRouteImport.update({
+    id: '/purchases/new',
+    path: '/purchases/new',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedJournalNewRoute = AuthenticatedJournalNewRouteImport.update({
@@ -71,9 +103,14 @@ export interface FileRoutesByFullPath {
   '/accounts': typeof AuthenticatedAccountsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/ledger': typeof AuthenticatedLedgerRoute
+  '/parties': typeof AuthenticatedPartiesRoute
   '/journal/$id': typeof AuthenticatedJournalIdRoute
   '/journal/new': typeof AuthenticatedJournalNewRoute
+  '/purchases/new': typeof AuthenticatedPurchasesNewRoute
+  '/sales/new': typeof AuthenticatedSalesNewRoute
   '/journal/': typeof AuthenticatedJournalIndexRoute
+  '/purchases/': typeof AuthenticatedPurchasesIndexRoute
+  '/sales/': typeof AuthenticatedSalesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -81,9 +118,14 @@ export interface FileRoutesByTo {
   '/accounts': typeof AuthenticatedAccountsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/ledger': typeof AuthenticatedLedgerRoute
+  '/parties': typeof AuthenticatedPartiesRoute
   '/journal/$id': typeof AuthenticatedJournalIdRoute
   '/journal/new': typeof AuthenticatedJournalNewRoute
+  '/purchases/new': typeof AuthenticatedPurchasesNewRoute
+  '/sales/new': typeof AuthenticatedSalesNewRoute
   '/journal': typeof AuthenticatedJournalIndexRoute
+  '/purchases': typeof AuthenticatedPurchasesIndexRoute
+  '/sales': typeof AuthenticatedSalesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -93,9 +135,14 @@ export interface FileRoutesById {
   '/_authenticated/accounts': typeof AuthenticatedAccountsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/ledger': typeof AuthenticatedLedgerRoute
+  '/_authenticated/parties': typeof AuthenticatedPartiesRoute
   '/_authenticated/journal/$id': typeof AuthenticatedJournalIdRoute
   '/_authenticated/journal/new': typeof AuthenticatedJournalNewRoute
+  '/_authenticated/purchases/new': typeof AuthenticatedPurchasesNewRoute
+  '/_authenticated/sales/new': typeof AuthenticatedSalesNewRoute
   '/_authenticated/journal/': typeof AuthenticatedJournalIndexRoute
+  '/_authenticated/purchases/': typeof AuthenticatedPurchasesIndexRoute
+  '/_authenticated/sales/': typeof AuthenticatedSalesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -105,9 +152,14 @@ export interface FileRouteTypes {
     | '/accounts'
     | '/dashboard'
     | '/ledger'
+    | '/parties'
     | '/journal/$id'
     | '/journal/new'
+    | '/purchases/new'
+    | '/sales/new'
     | '/journal/'
+    | '/purchases/'
+    | '/sales/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -115,9 +167,14 @@ export interface FileRouteTypes {
     | '/accounts'
     | '/dashboard'
     | '/ledger'
+    | '/parties'
     | '/journal/$id'
     | '/journal/new'
+    | '/purchases/new'
+    | '/sales/new'
     | '/journal'
+    | '/purchases'
+    | '/sales'
   id:
     | '__root__'
     | '/'
@@ -126,9 +183,14 @@ export interface FileRouteTypes {
     | '/_authenticated/accounts'
     | '/_authenticated/dashboard'
     | '/_authenticated/ledger'
+    | '/_authenticated/parties'
     | '/_authenticated/journal/$id'
     | '/_authenticated/journal/new'
+    | '/_authenticated/purchases/new'
+    | '/_authenticated/sales/new'
     | '/_authenticated/journal/'
+    | '/_authenticated/purchases/'
+    | '/_authenticated/sales/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -160,6 +222,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/parties': {
+      id: '/_authenticated/parties'
+      path: '/parties'
+      fullPath: '/parties'
+      preLoaderRoute: typeof AuthenticatedPartiesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/ledger': {
       id: '/_authenticated/ledger'
       path: '/ledger'
@@ -181,11 +250,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/sales/': {
+      id: '/_authenticated/sales/'
+      path: '/sales'
+      fullPath: '/sales/'
+      preLoaderRoute: typeof AuthenticatedSalesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/purchases/': {
+      id: '/_authenticated/purchases/'
+      path: '/purchases'
+      fullPath: '/purchases/'
+      preLoaderRoute: typeof AuthenticatedPurchasesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/journal/': {
       id: '/_authenticated/journal/'
       path: '/journal'
       fullPath: '/journal/'
       preLoaderRoute: typeof AuthenticatedJournalIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/sales/new': {
+      id: '/_authenticated/sales/new'
+      path: '/sales/new'
+      fullPath: '/sales/new'
+      preLoaderRoute: typeof AuthenticatedSalesNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/purchases/new': {
+      id: '/_authenticated/purchases/new'
+      path: '/purchases/new'
+      fullPath: '/purchases/new'
+      preLoaderRoute: typeof AuthenticatedPurchasesNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/journal/new': {
@@ -209,18 +306,28 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountsRoute: typeof AuthenticatedAccountsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedLedgerRoute: typeof AuthenticatedLedgerRoute
+  AuthenticatedPartiesRoute: typeof AuthenticatedPartiesRoute
   AuthenticatedJournalIdRoute: typeof AuthenticatedJournalIdRoute
   AuthenticatedJournalNewRoute: typeof AuthenticatedJournalNewRoute
+  AuthenticatedPurchasesNewRoute: typeof AuthenticatedPurchasesNewRoute
+  AuthenticatedSalesNewRoute: typeof AuthenticatedSalesNewRoute
   AuthenticatedJournalIndexRoute: typeof AuthenticatedJournalIndexRoute
+  AuthenticatedPurchasesIndexRoute: typeof AuthenticatedPurchasesIndexRoute
+  AuthenticatedSalesIndexRoute: typeof AuthenticatedSalesIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountsRoute: AuthenticatedAccountsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedLedgerRoute: AuthenticatedLedgerRoute,
+  AuthenticatedPartiesRoute: AuthenticatedPartiesRoute,
   AuthenticatedJournalIdRoute: AuthenticatedJournalIdRoute,
   AuthenticatedJournalNewRoute: AuthenticatedJournalNewRoute,
+  AuthenticatedPurchasesNewRoute: AuthenticatedPurchasesNewRoute,
+  AuthenticatedSalesNewRoute: AuthenticatedSalesNewRoute,
   AuthenticatedJournalIndexRoute: AuthenticatedJournalIndexRoute,
+  AuthenticatedPurchasesIndexRoute: AuthenticatedPurchasesIndexRoute,
+  AuthenticatedSalesIndexRoute: AuthenticatedSalesIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
