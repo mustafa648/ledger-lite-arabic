@@ -83,10 +83,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "نظام المحاسبة | Accounting System" },
       { name: "description", content: "نظام محاسبة احترافي متكامل بالقيد المزدوج ودعم كامل للعربية" },
-      { property: "og:title", content: "نظام المحاسبة" },
-      { property: "og:description", content: "محاسبة احترافية بمعايير عالمية" },
+      { property: "og:title", content: "نظام المحاسبة | Accounting System" },
+      { property: "og:description", content: "نظام محاسبة احترافي متكامل بالقيد المزدوج ودعم كامل للعربية" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "نظام المحاسبة | Accounting System" },
+      { name: "twitter:description", content: "نظام محاسبة احترافي متكامل بالقيد المزدوج ودعم كامل للعربية" },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b27b53e5-09ef-4d31-8668-2166a89d908c/id-preview-c8b27dd4--ce22e659-cf06-4bf4-acd9-68f61db33e0b.lovable.app-1784248318533.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/b27b53e5-09ef-4d31-8668-2166a89d908c/id-preview-c8b27dd4--ce22e659-cf06-4bf4-acd9-68f61db33e0b.lovable.app-1784248318533.png" },
     ],
     links: [
       {
