@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedStockMovementsRouteImport } from './routes/_authenticated/stock-movements'
 import { Route as AuthenticatedPartiesRouteImport } from './routes/_authenticated/parties'
 import { Route as AuthenticatedLedgerRouteImport } from './routes/_authenticated/ledger'
 import { Route as AuthenticatedItemsRouteImport } from './routes/_authenticated/items'
@@ -48,6 +49,12 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedStockMovementsRoute =
+  AuthenticatedStockMovementsRouteImport.update({
+    id: '/stock-movements',
+    path: '/stock-movements',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPartiesRoute = AuthenticatedPartiesRouteImport.update({
   id: '/parties',
   path: '/parties',
@@ -174,6 +181,7 @@ export interface FileRoutesByFullPath {
   '/items': typeof AuthenticatedItemsRoute
   '/ledger': typeof AuthenticatedLedgerRoute
   '/parties': typeof AuthenticatedPartiesRoute
+  '/stock-movements': typeof AuthenticatedStockMovementsRoute
   '/journal/$id': typeof AuthenticatedJournalIdRoute
   '/journal/new': typeof AuthenticatedJournalNewRoute
   '/payments/new': typeof AuthenticatedPaymentsNewRoute
@@ -199,6 +207,7 @@ export interface FileRoutesByTo {
   '/items': typeof AuthenticatedItemsRoute
   '/ledger': typeof AuthenticatedLedgerRoute
   '/parties': typeof AuthenticatedPartiesRoute
+  '/stock-movements': typeof AuthenticatedStockMovementsRoute
   '/journal/$id': typeof AuthenticatedJournalIdRoute
   '/journal/new': typeof AuthenticatedJournalNewRoute
   '/payments/new': typeof AuthenticatedPaymentsNewRoute
@@ -226,6 +235,7 @@ export interface FileRoutesById {
   '/_authenticated/items': typeof AuthenticatedItemsRoute
   '/_authenticated/ledger': typeof AuthenticatedLedgerRoute
   '/_authenticated/parties': typeof AuthenticatedPartiesRoute
+  '/_authenticated/stock-movements': typeof AuthenticatedStockMovementsRoute
   '/_authenticated/journal/$id': typeof AuthenticatedJournalIdRoute
   '/_authenticated/journal/new': typeof AuthenticatedJournalNewRoute
   '/_authenticated/payments/new': typeof AuthenticatedPaymentsNewRoute
@@ -253,6 +263,7 @@ export interface FileRouteTypes {
     | '/items'
     | '/ledger'
     | '/parties'
+    | '/stock-movements'
     | '/journal/$id'
     | '/journal/new'
     | '/payments/new'
@@ -278,6 +289,7 @@ export interface FileRouteTypes {
     | '/items'
     | '/ledger'
     | '/parties'
+    | '/stock-movements'
     | '/journal/$id'
     | '/journal/new'
     | '/payments/new'
@@ -304,6 +316,7 @@ export interface FileRouteTypes {
     | '/_authenticated/items'
     | '/_authenticated/ledger'
     | '/_authenticated/parties'
+    | '/_authenticated/stock-movements'
     | '/_authenticated/journal/$id'
     | '/_authenticated/journal/new'
     | '/_authenticated/payments/new'
@@ -350,6 +363,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/stock-movements': {
+      id: '/_authenticated/stock-movements'
+      path: '/stock-movements'
+      fullPath: '/stock-movements'
+      preLoaderRoute: typeof AuthenticatedStockMovementsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/parties': {
       id: '/_authenticated/parties'
@@ -507,6 +527,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedItemsRoute: typeof AuthenticatedItemsRoute
   AuthenticatedLedgerRoute: typeof AuthenticatedLedgerRoute
   AuthenticatedPartiesRoute: typeof AuthenticatedPartiesRoute
+  AuthenticatedStockMovementsRoute: typeof AuthenticatedStockMovementsRoute
   AuthenticatedJournalIdRoute: typeof AuthenticatedJournalIdRoute
   AuthenticatedJournalNewRoute: typeof AuthenticatedJournalNewRoute
   AuthenticatedPaymentsNewRoute: typeof AuthenticatedPaymentsNewRoute
@@ -531,6 +552,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedItemsRoute: AuthenticatedItemsRoute,
   AuthenticatedLedgerRoute: AuthenticatedLedgerRoute,
   AuthenticatedPartiesRoute: AuthenticatedPartiesRoute,
+  AuthenticatedStockMovementsRoute: AuthenticatedStockMovementsRoute,
   AuthenticatedJournalIdRoute: AuthenticatedJournalIdRoute,
   AuthenticatedJournalNewRoute: AuthenticatedJournalNewRoute,
   AuthenticatedPaymentsNewRoute: AuthenticatedPaymentsNewRoute,
