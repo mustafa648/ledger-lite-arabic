@@ -235,6 +235,95 @@ export type Database = {
           },
         ]
       }
+      items: {
+        Row: {
+          average_cost: number
+          cogs_account_id: string | null
+          created_at: string
+          expense_account_id: string | null
+          id: string
+          inventory_account_id: string | null
+          is_active: boolean
+          is_service: boolean
+          name: string
+          name_en: string | null
+          notes: string | null
+          quantity_on_hand: number
+          revenue_account_id: string | null
+          sale_price: number
+          sku: string
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          average_cost?: number
+          cogs_account_id?: string | null
+          created_at?: string
+          expense_account_id?: string | null
+          id?: string
+          inventory_account_id?: string | null
+          is_active?: boolean
+          is_service?: boolean
+          name: string
+          name_en?: string | null
+          notes?: string | null
+          quantity_on_hand?: number
+          revenue_account_id?: string | null
+          sale_price?: number
+          sku: string
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          average_cost?: number
+          cogs_account_id?: string | null
+          created_at?: string
+          expense_account_id?: string | null
+          id?: string
+          inventory_account_id?: string | null
+          is_active?: boolean
+          is_service?: boolean
+          name?: string
+          name_en?: string | null
+          notes?: string | null
+          quantity_on_hand?: number
+          revenue_account_id?: string | null
+          sale_price?: number
+          sku?: string
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "items_cogs_account_id_fkey"
+            columns: ["cogs_account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "items_expense_account_id_fkey"
+            columns: ["expense_account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "items_inventory_account_id_fkey"
+            columns: ["inventory_account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "items_revenue_account_id_fkey"
+            columns: ["revenue_account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       journal_entries: {
         Row: {
           branch_id: string
@@ -546,6 +635,7 @@ export type Database = {
           expense_account_id: string | null
           id: string
           invoice_id: string
+          item_id: string | null
           line_no: number
           line_total: number
           qty: number
@@ -557,6 +647,7 @@ export type Database = {
           expense_account_id?: string | null
           id?: string
           invoice_id: string
+          item_id?: string | null
           line_no?: number
           line_total?: number
           qty?: number
@@ -568,6 +659,7 @@ export type Database = {
           expense_account_id?: string | null
           id?: string
           invoice_id?: string
+          item_id?: string | null
           line_no?: number
           line_total?: number
           qty?: number
@@ -587,6 +679,13 @@ export type Database = {
             columns: ["invoice_id"]
             isOneToOne: false
             referencedRelation: "purchase_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_invoice_lines_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
             referencedColumns: ["id"]
           },
         ]
@@ -692,6 +791,7 @@ export type Database = {
           id: string
           income_account_id: string | null
           invoice_id: string
+          item_id: string | null
           line_no: number
           line_total: number
           qty: number
@@ -703,6 +803,7 @@ export type Database = {
           id?: string
           income_account_id?: string | null
           invoice_id: string
+          item_id?: string | null
           line_no?: number
           line_total?: number
           qty?: number
@@ -714,6 +815,7 @@ export type Database = {
           id?: string
           income_account_id?: string | null
           invoice_id?: string
+          item_id?: string | null
           line_no?: number
           line_total?: number
           qty?: number
@@ -733,6 +835,13 @@ export type Database = {
             columns: ["invoice_id"]
             isOneToOne: false
             referencedRelation: "sales_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_invoice_lines_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
             referencedColumns: ["id"]
           },
         ]
@@ -822,6 +931,79 @@ export type Database = {
           },
           {
             foreignKeyName: "sales_invoices_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: false
+            referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_movements: {
+        Row: {
+          branch_id: string | null
+          created_at: string
+          created_by: string | null
+          direction: Database["public"]["Enums"]["stock_direction"]
+          id: string
+          item_id: string
+          journal_entry_id: string | null
+          movement_date: string
+          notes: string | null
+          qty: number
+          source_id: string | null
+          source_type: string | null
+          total_cost: number
+          unit_cost: number
+        }
+        Insert: {
+          branch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          direction: Database["public"]["Enums"]["stock_direction"]
+          id?: string
+          item_id: string
+          journal_entry_id?: string | null
+          movement_date?: string
+          notes?: string | null
+          qty: number
+          source_id?: string | null
+          source_type?: string | null
+          total_cost?: number
+          unit_cost?: number
+        }
+        Update: {
+          branch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          direction?: Database["public"]["Enums"]["stock_direction"]
+          id?: string
+          item_id?: string
+          journal_entry_id?: string | null
+          movement_date?: string
+          notes?: string | null
+          qty?: number
+          source_id?: string | null
+          source_type?: string | null
+          total_cost?: number
+          unit_cost?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_journal_entry_id_fkey"
             columns: ["journal_entry_id"]
             isOneToOne: false
             referencedRelation: "journal_entries"
@@ -983,6 +1165,38 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      record_stock_adjustment: {
+        Args: {
+          _branch_id: string
+          _direction: Database["public"]["Enums"]["stock_direction"]
+          _item_id: string
+          _notes: string
+          _qty: number
+          _unit_cost: number
+        }
+        Returns: {
+          branch_id: string | null
+          created_at: string
+          created_by: string | null
+          direction: Database["public"]["Enums"]["stock_direction"]
+          id: string
+          item_id: string
+          journal_entry_id: string | null
+          movement_date: string
+          notes: string | null
+          qty: number
+          source_id: string | null
+          source_type: string | null
+          total_cost: number
+          unit_cost: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "stock_movements"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       account_type: "asset" | "liability" | "equity" | "income" | "expense"
@@ -990,6 +1204,7 @@ export type Database = {
       doc_status: "draft" | "posted" | "cancelled"
       party_type: "customer" | "supplier" | "both"
       payment_direction: "receipt" | "payment"
+      stock_direction: "in" | "out" | "adjust"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1122,6 +1337,7 @@ export const Constants = {
       doc_status: ["draft", "posted", "cancelled"],
       party_type: ["customer", "supplier", "both"],
       payment_direction: ["receipt", "payment"],
+      stock_direction: ["in", "out", "adjust"],
     },
   },
 } as const

@@ -16,6 +16,8 @@ import {
   Languages,
   Menu,
   Building2,
+  Package,
+  PackageSearch,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -96,6 +98,11 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         <NavItem to="/sales" icon={ShoppingCart} label={t("nav.sales")} />
         <NavItem to="/purchases" icon={ShoppingBag} label={t("nav.purchases")} />
         <NavItem to="/payments" icon={Wallet} label={t("nav.payments")} />
+        <div className="px-3 pb-1 pt-4 text-xs uppercase tracking-wider text-sidebar-foreground/50">
+          {t("nav.inventory")}
+        </div>
+        <NavItem to="/items" icon={Package} label={t("nav.items")} />
+        <NavItem to="/stock-movements" icon={PackageSearch} label={t("nav.stockMovements")} />
         <div className="px-3 pb-1 pt-4 text-xs uppercase tracking-wider text-sidebar-foreground/50">
           {t("nav.reports")}
         </div>

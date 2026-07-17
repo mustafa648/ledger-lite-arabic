@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { formatMoney } from "@/lib/format";
 
 type Kind = "sales" | "purchases";
-type Line = { description: string; qty: number; unit_price: number; tax_rate: number; account_id: string };
+type Line = { description: string; qty: number; unit_price: number; tax_rate: number; account_id: string; item_id: string };
 
 export function InvoiceForm({ kind }: { kind: Kind }) {
   const { t, i18n } = useTranslation();
@@ -44,6 +44,10 @@ export function InvoiceForm({ kind }: { kind: Kind }) {
       return (await supabase.from("accounts").select("id, code, name, name_en").eq("is_active", true).eq("is_group", false).eq("type", type).order("code")).data ?? [];
     },
   });
+  const itemsQ = useQuery({
+    queryKey: ["items-active"],
+    queryFn: async () => (await supabase.from("items").select("id, sku, name, name_en, sale_price, average_cost, is_service").eq("is_active", true).order("sku")).data ?? [],
+  });
 
   const [invoiceDate, setInvoiceDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [dueDate, setDueDate] = useState<string>("");
@@ -51,7 +55,7 @@ export function InvoiceForm({ kind }: { kind: Kind }) {
   const [branchId, setBranchId] = useState("");
   const [partyId, setPartyId] = useState("");
   const [currency, setCurrency] = useState("YER");
-  const [lines, setLines] = useState<Line[]>([{ description: "", qty: 1, unit_price: 0, tax_rate: 0, account_id: "" }]);
+  const [lines, setLines] = useState<Line[]>([{ description: "", qty: 1, unit_price: 0, tax_rate: 0, account_id: "", item_id: "" }]);
 
   useEffect(() => {
     if (!branchId && branches.data?.[0]) setBranchId(branches.data[0].id);
@@ -91,6 +95,7 @@ export function InvoiceForm({ kind }: { kind: Kind }) {
         tax_rate: l.tax_rate,
         line_total: Number(l.qty) * Number(l.unit_price),
         [accountField]: l.account_id || null,
+        item_id: l.item_id || null,
         line_no: i + 1,
       }));
       if (lineRows.length === 0) throw new Error("No lines");
@@ -156,6 +161,7 @@ export function InvoiceForm({ kind }: { kind: Kind }) {
             <table className="w-full text-sm">
               <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
                 <tr>
+                  <th className="p-2 text-start w-44">{t("items.item")}</th>
                   <th className="p-2 text-start">{t("common.description")}</th>
                   <th className="p-2 text-start w-40">{t("common.account")}</th>
                   <th className="p-2 text-end w-20">{t("invoice.qty")}</th>
@@ -168,6 +174,23 @@ export function InvoiceForm({ kind }: { kind: Kind }) {
               <tbody>
                 {lines.map((l, i) => (
                   <tr key={i} className="border-b">
+                    <td className="p-2">
+                      <Select value={l.item_id} onValueChange={(v) => setLines((ls) => ls.map((x, j) => {
+                        if (j !== i) return x;
+                        const it = (itemsQ.data ?? []).find((z: any) => z.id === v);
+                        if (!it) return { ...x, item_id: v };
+                        const price = kind === "sales" ? Number(it.sale_price) : Number(it.average_cost);
+                        return {
+                          ...x,
+                          item_id: v,
+                          description: x.description || (i18n.language === "en" ? it.name_en || it.name : it.name),
+                          unit_price: x.unit_price || price,
+                        };
+                      }))}>
+                        <SelectTrigger className="h-9"><SelectValue placeholder="—" /></SelectTrigger>
+                        <SelectContent>{(itemsQ.data ?? []).map((it: any) => (<SelectItem key={it.id} value={it.id}>{it.sku} — {i18n.language === "en" ? it.name_en || it.name : it.name}</SelectItem>))}</SelectContent>
+                      </Select>
+                    </td>
                     <td className="p-2"><Input value={l.description} onChange={(e) => setLines((ls) => ls.map((x, j) => j === i ? { ...x, description: e.target.value } : x))} /></td>
                     <td className="p-2">
                       <Select value={l.account_id} onValueChange={(v) => setLines((ls) => ls.map((x, j) => j === i ? { ...x, account_id: v } : x))}>
@@ -185,7 +208,7 @@ export function InvoiceForm({ kind }: { kind: Kind }) {
               </tbody>
             </table>
           </div>
-          <Button variant="outline" size="sm" onClick={() => setLines((ls) => [...ls, { description: "", qty: 1, unit_price: 0, tax_rate: 0, account_id: "" }])}>
+          <Button variant="outline" size="sm" onClick={() => setLines((ls) => [...ls, { description: "", qty: 1, unit_price: 0, tax_rate: 0, account_id: "", item_id: "" }])}>
             <Plus className="me-1 h-4 w-4" />{t("journal.addLine")}
           </Button>
 
