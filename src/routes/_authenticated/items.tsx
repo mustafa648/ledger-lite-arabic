@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import {
@@ -118,7 +119,7 @@ function ItemDialog({ onDone }: { onDone: () => void }) {
         </div>
         <div><Label>{t("common.name")} (AR)</Label><Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></div>
         <div><Label>{t("common.name")} (EN)</Label><Input value={f.name_en} onChange={(e) => setF({ ...f, name_en: e.target.value })} /></div>
-        <div><Label>{t("items.salePrice")}</Label><Input type="number" step="0.01" value={f.sale_price} onChange={(e) => setF({ ...f, sale_price: parseFloat(e.target.value) || 0 })} /></div>
+        <div><Label>{t("items.salePrice")}</Label><NumberInput value={f.sale_price} onChange={(n) => setF({ ...f, sale_price: n })} /></div>
         <label className="flex items-center gap-2 text-sm">
           <Checkbox checked={f.is_service} onCheckedChange={(v) => setF({ ...f, is_service: !!v })} />
           {t("items.isService")}
@@ -184,11 +185,11 @@ function AdjustDialog({ item, onDone }: { item: any; onDone: () => void }) {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label>{direction === "adjust" ? t("items.onHand") : t("invoice.qty")}</Label>
-            <Input type="number" step="0.01" value={qty} onChange={(e) => setQty(parseFloat(e.target.value) || 0)} />
+            <NumberInput value={qty} onChange={setQty} />
           </div>
           <div>
             <Label>{direction === "out" ? t("items.averageCost") : t("invoice.unitPrice")}</Label>
-            <Input type="number" step="0.01" value={unitCost} onChange={(e) => setUnitCost(parseFloat(e.target.value) || 0)} disabled={direction === "out"} />
+            <NumberInput value={unitCost} onChange={setUnitCost} disabled={direction === "out"} />
           </div>
         </div>
         <div><Label>{t("invoice.notes")}</Label><Input value={notes} onChange={(e) => setNotes(e.target.value)} /></div>

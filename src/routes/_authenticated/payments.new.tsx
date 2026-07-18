@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -95,7 +96,7 @@ function NewPayment() {
               <SelectContent>{(cashAccounts.data ?? []).map((a: any) => (<SelectItem key={a.id} value={a.id}>{a.code} — {a.name}</SelectItem>))}</SelectContent>
             </Select>
           </div>
-          <div className="space-y-1.5"><Label>{t("common.amount")}</Label><Input type="number" step="0.01" value={amount || ""} onChange={(e) => setAmount(parseFloat(e.target.value) || 0)} /></div>
+          <div className="space-y-1.5"><Label>{t("common.amount")}</Label><NumberInput value={amount} onChange={setAmount} /></div>
           <div className="space-y-1.5"><Label>{t("common.currency")}</Label>
             <Select value={currency} onValueChange={setCurrency}>
               <SelectTrigger><SelectValue /></SelectTrigger>

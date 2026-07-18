@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -153,10 +154,10 @@ function NewJournal() {
                       <Input value={l.description} onChange={(e) => setLines((ls) => ls.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)))} />
                     </td>
                     <td className="p-2">
-                      <Input type="number" step="0.01" className="text-end" value={l.debit || ""} onChange={(e) => setLines((ls) => ls.map((x, j) => (j === i ? { ...x, debit: parseFloat(e.target.value) || 0, credit: 0 } : x)))} />
+                      <NumberInput className="text-end" value={l.debit} onChange={(n) => setLines((ls) => ls.map((x, j) => (j === i ? { ...x, debit: n, credit: 0 } : x)))} />
                     </td>
                     <td className="p-2">
-                      <Input type="number" step="0.01" className="text-end" value={l.credit || ""} onChange={(e) => setLines((ls) => ls.map((x, j) => (j === i ? { ...x, credit: parseFloat(e.target.value) || 0, debit: 0 } : x)))} />
+                      <NumberInput className="text-end" value={l.credit} onChange={(n) => setLines((ls) => ls.map((x, j) => (j === i ? { ...x, credit: n, debit: 0 } : x)))} />
                     </td>
                     <td className="p-2">
                       <Button variant="ghost" size="icon" onClick={() => setLines((ls) => ls.filter((_, j) => j !== i))} disabled={lines.length <= 2}>

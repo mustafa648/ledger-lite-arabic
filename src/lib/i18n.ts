@@ -80,6 +80,7 @@ const ar = {
     from: "من",
     to: "إلى",
     all: "الكل",
+    phone: "الهاتف",
   },
   items: {
     title: "الأصناف",
@@ -274,6 +275,7 @@ const en = {
     from: "From",
     to: "To",
     all: "All",
+    phone: "Phone",
   },
   items: {
     title: "Items",
