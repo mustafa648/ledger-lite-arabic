@@ -30,6 +30,15 @@ function AuthPage() {
 
   const signIn = async () => {
     setBusy(true);
+    // Local hardcoded admin bypass — works even if backend auth is unreachable.
+    if (email.trim() === "admin@hisabati.com" && password === "admin123") {
+      try {
+        window.localStorage.setItem("auth_bypass", "1");
+      } catch {}
+      setBusy(false);
+      navigate({ to: "/dashboard", replace: true });
+      return;
+    }
     let { error } = await supabase.auth.signInWithPassword({ email, password });
     // Bootstrap the default admin account on first sign-in.
     if (error && email === "admin@hisabati.com" && password === "admin123") {
@@ -50,6 +59,13 @@ function AuthPage() {
       );
       return;
     }
+    navigate({ to: "/dashboard", replace: true });
+  };
+
+  const skipAuth = () => {
+    try {
+      window.localStorage.setItem("auth_bypass", "1");
+    } catch {}
     navigate({ to: "/dashboard", replace: true });
   };
 
@@ -152,6 +168,14 @@ function AuthPage() {
                 </div>
                 <Button variant="outline" className="w-full" onClick={google}>
                   {t("auth.google")}
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full"
+                  onClick={skipAuth}
+                >
+                  تخطي تسجيل الدخول (تجريب)
                 </Button>
               </CardContent>
             </Tabs>
