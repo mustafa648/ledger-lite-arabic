@@ -30,10 +30,27 @@ function AuthPage() {
 
   const signIn = async () => {
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    let { error } = await supabase.auth.signInWithPassword({ email, password });
+    // Bootstrap the default admin account on first sign-in.
+    if (error && email === "admin@hisabati.com" && password === "admin123") {
+      const up = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: "Admin" } },
+      });
+      if (!up.error) {
+        const retry = await supabase.auth.signInWithPassword({ email, password });
+        error = retry.error;
+      }
+    }
     setBusy(false);
-    if (error) toast.error(error.message);
-    else navigate({ to: "/dashboard", replace: true });
+    if (error) {
+      toast.error(
+        i18n.language === "ar" ? "بيانات الدخول غير صحيحة" : "Invalid email or password",
+      );
+      return;
+    }
+    navigate({ to: "/dashboard", replace: true });
   };
 
   const signUp = async () => {
