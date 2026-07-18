@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
+import { NumberInput } from "@/components/ui/number-input";
+import { SearchSelect } from "@/components/ui/search-select";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/format";
 
@@ -20,6 +29,7 @@ type Line = { description: string; qty: number; unit_price: number; tax_rate: nu
 export function InvoiceForm({ kind }: { kind: Kind }) {
   const { t, i18n } = useTranslation();
   const nav = useNavigate();
+  const qc = useQueryClient();
   const table = kind === "sales" ? "sales_invoices" : "purchase_invoices";
   const linesTable = kind === "sales" ? "sales_invoice_lines" : "purchase_invoice_lines";
   const accountField = kind === "sales" ? "income_account_id" : "expense_account_id";
@@ -56,6 +66,13 @@ export function InvoiceForm({ kind }: { kind: Kind }) {
   const [partyId, setPartyId] = useState("");
   const [currency, setCurrency] = useState("YER");
   const [lines, setLines] = useState<Line[]>([{ description: "", qty: 1, unit_price: 0, tax_rate: 0, account_id: "", item_id: "" }]);
+
+  const [partyDlg, setPartyDlg] = useState<{ open: boolean; query: string }>({ open: false, query: "" });
+  const [itemDlg, setItemDlg] = useState<{ open: boolean; query: string; lineIndex: number }>({
+    open: false,
+    query: "",
+    lineIndex: 0,
+  });
 
   useEffect(() => {
     if (!branchId && branches.data?.[0]) setBranchId(branches.data[0].id);
@@ -130,14 +147,15 @@ export function InvoiceForm({ kind }: { kind: Kind }) {
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="space-y-1.5">
               <Label>{t(`${kind}.${kind === "sales" ? "customer" : "supplier"}`)}</Label>
-              <Select value={partyId} onValueChange={setPartyId}>
-                <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
-                <SelectContent>
-                  {(parties.data ?? []).map((p: any) => (
-                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchSelect
+                value={partyId}
+                onChange={setPartyId}
+                options={(parties.data ?? []).map((p: any) => ({ value: p.id, label: p.name }))}
+                placeholder={t("common.search")}
+                emptyText={t("common.noData")}
+                onCreate={(q) => setPartyDlg({ open: true, query: q })}
+                createLabel={t(`${kind}.${kind === "sales" ? "customer" : "supplier"}`)}
+              />
             </div>
             <div className="space-y-1.5"><Label>{t("invoice.invoiceDate")}</Label><Input type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} /></div>
             <div className="space-y-1.5"><Label>{t("invoice.dueDate")}</Label><Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></div>
@@ -175,21 +193,34 @@ export function InvoiceForm({ kind }: { kind: Kind }) {
                 {lines.map((l, i) => (
                   <tr key={i} className="border-b">
                     <td className="p-2">
-                      <Select value={l.item_id} onValueChange={(v) => setLines((ls) => ls.map((x, j) => {
-                        if (j !== i) return x;
-                        const it = (itemsQ.data ?? []).find((z: any) => z.id === v);
-                        if (!it) return { ...x, item_id: v };
-                        const price = kind === "sales" ? Number(it.sale_price) : Number(it.average_cost);
-                        return {
-                          ...x,
-                          item_id: v,
-                          description: x.description || (i18n.language === "en" ? it.name_en || it.name : it.name),
-                          unit_price: x.unit_price || price,
-                        };
-                      }))}>
-                        <SelectTrigger className="h-9"><SelectValue placeholder="—" /></SelectTrigger>
-                        <SelectContent>{(itemsQ.data ?? []).map((it: any) => (<SelectItem key={it.id} value={it.id}>{it.sku} — {i18n.language === "en" ? it.name_en || it.name : it.name}</SelectItem>))}</SelectContent>
-                      </Select>
+                      <SearchSelect
+                        value={l.item_id}
+                        onChange={(v) =>
+                          setLines((ls) =>
+                            ls.map((x, j) => {
+                              if (j !== i) return x;
+                              const it = (itemsQ.data ?? []).find((z: any) => z.id === v);
+                              if (!it) return { ...x, item_id: v };
+                              const price = kind === "sales" ? Number(it.sale_price) : Number(it.average_cost);
+                              return {
+                                ...x,
+                                item_id: v,
+                                description: x.description || (i18n.language === "en" ? it.name_en || it.name : it.name),
+                                unit_price: x.unit_price || price,
+                              };
+                            }),
+                          )
+                        }
+                        options={(itemsQ.data ?? []).map((it: any) => ({
+                          value: it.id,
+                          label: i18n.language === "en" ? it.name_en || it.name : it.name,
+                          sub: it.sku,
+                        }))}
+                        placeholder={t("items.item")}
+                        emptyText={t("common.noData")}
+                        onCreate={(q) => setItemDlg({ open: true, query: q, lineIndex: i })}
+                        createLabel={t("items.newItem")}
+                      />
                     </td>
                     <td className="p-2"><Input value={l.description} onChange={(e) => setLines((ls) => ls.map((x, j) => j === i ? { ...x, description: e.target.value } : x))} /></td>
                     <td className="p-2">
@@ -198,9 +229,9 @@ export function InvoiceForm({ kind }: { kind: Kind }) {
                         <SelectContent>{(accounts.data ?? []).map((a: any) => (<SelectItem key={a.id} value={a.id}>{a.code} — {i18n.language === "en" ? a.name_en || a.name : a.name}</SelectItem>))}</SelectContent>
                       </Select>
                     </td>
-                    <td className="p-2"><Input type="number" step="0.01" className="text-end" value={l.qty} onChange={(e) => setLines((ls) => ls.map((x, j) => j === i ? { ...x, qty: parseFloat(e.target.value) || 0 } : x))} /></td>
-                    <td className="p-2"><Input type="number" step="0.01" className="text-end" value={l.unit_price} onChange={(e) => setLines((ls) => ls.map((x, j) => j === i ? { ...x, unit_price: parseFloat(e.target.value) || 0 } : x))} /></td>
-                    <td className="p-2"><Input type="number" step="0.01" className="text-end" value={l.tax_rate} onChange={(e) => setLines((ls) => ls.map((x, j) => j === i ? { ...x, tax_rate: parseFloat(e.target.value) || 0 } : x))} /></td>
+                    <td className="p-2"><NumberInput className="text-end" value={l.qty} onChange={(n) => setLines((ls) => ls.map((x, j) => j === i ? { ...x, qty: n } : x))} /></td>
+                    <td className="p-2"><NumberInput className="text-end" value={l.unit_price} onChange={(n) => setLines((ls) => ls.map((x, j) => j === i ? { ...x, unit_price: n } : x))} /></td>
+                    <td className="p-2"><NumberInput className="text-end" value={l.tax_rate} onChange={(n) => setLines((ls) => ls.map((x, j) => j === i ? { ...x, tax_rate: n } : x))} /></td>
                     <td className="p-2 text-end">{formatMoney((l.qty || 0) * (l.unit_price || 0), currency, i18n.language)}</td>
                     <td className="p-2"><Button variant="ghost" size="icon" onClick={() => setLines((ls) => ls.filter((_, j) => j !== i))} disabled={lines.length <= 1}><Trash2 className="h-4 w-4" /></Button></td>
                   </tr>
@@ -222,6 +253,165 @@ export function InvoiceForm({ kind }: { kind: Kind }) {
           </div>
         </CardContent>
       </Card>
+
+      <QuickPartyDialog
+        kind={kind}
+        open={partyDlg.open}
+        initialName={partyDlg.query}
+        onOpenChange={(o) => setPartyDlg((s) => ({ ...s, open: o }))}
+        onCreated={(id) => {
+          setPartyId(id);
+          qc.invalidateQueries({ queryKey: ["parties-active", kind] });
+          setPartyDlg({ open: false, query: "" });
+        }}
+      />
+      <QuickItemDialog
+        open={itemDlg.open}
+        initialName={itemDlg.query}
+        onOpenChange={(o) => setItemDlg((s) => ({ ...s, open: o }))}
+        onCreated={(id) => {
+          const idx = itemDlg.lineIndex;
+          setLines((ls) => ls.map((x, j) => (j === idx ? { ...x, item_id: id } : x)));
+          qc.invalidateQueries({ queryKey: ["items-active"] });
+          setItemDlg({ open: false, query: "", lineIndex: 0 });
+        }}
+      />
     </>
+  );
+}
+
+function QuickPartyDialog({
+  kind,
+  open,
+  initialName,
+  onOpenChange,
+  onCreated,
+}: {
+  kind: Kind;
+  open: boolean;
+  initialName: string;
+  onOpenChange: (o: boolean) => void;
+  onCreated: (id: string) => void;
+}) {
+  const { t } = useTranslation();
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  useEffect(() => {
+    if (open) {
+      setName(initialName);
+      setPhone("");
+    }
+  }, [open, initialName]);
+  const save = useMutation({
+    mutationFn: async () => {
+      if (!name.trim()) throw new Error("Name required");
+      const { data, error } = await supabase
+        .from("parties")
+        .insert({ name: name.trim(), phone: phone || null, type: kind === "sales" ? "customer" : "supplier" } as any)
+        .select("id")
+        .single();
+      if (error) throw error;
+      return data.id as string;
+    },
+    onSuccess: (id) => {
+      toast.success(t("common.save"));
+      onCreated(id);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t(`${kind}.${kind === "sales" ? "customer" : "supplier"}`)}</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-3">
+          <div>
+            <Label>{t("common.name")}</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} autoFocus />
+          </div>
+          <div>
+            <Label>{t("common.phone")}</Label>
+            <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button onClick={() => save.mutate()} disabled={save.isPending || !name.trim()}>
+            {t("common.save")}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function QuickItemDialog({
+  open,
+  initialName,
+  onOpenChange,
+  onCreated,
+}: {
+  open: boolean;
+  initialName: string;
+  onOpenChange: (o: boolean) => void;
+  onCreated: (id: string) => void;
+}) {
+  const { t } = useTranslation();
+  const [sku, setSku] = useState("");
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState(0);
+  useEffect(() => {
+    if (open) {
+      setName(initialName);
+      setSku("");
+      setPrice(0);
+    }
+  }, [open, initialName]);
+  const save = useMutation({
+    mutationFn: async () => {
+      if (!name.trim() || !sku.trim()) throw new Error("SKU + name required");
+      const { data, error } = await supabase
+        .from("items")
+        .insert({ sku: sku.trim(), name: name.trim(), sale_price: price, unit: "قطعة" } as any)
+        .select("id")
+        .single();
+      if (error) throw error;
+      return data.id as string;
+    },
+    onSuccess: (id) => {
+      toast.success(t("common.save"));
+      onCreated(id);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t("items.newItem")}</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>{t("items.sku")}</Label>
+              <Input value={sku} onChange={(e) => setSku(e.target.value)} autoFocus />
+            </div>
+            <div>
+              <Label>{t("items.salePrice")}</Label>
+              <NumberInput value={price} onChange={setPrice} />
+            </div>
+          </div>
+          <div>
+            <Label>{t("common.name")}</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button onClick={() => save.mutate()} disabled={save.isPending || !name.trim() || !sku.trim()}>
+            {t("common.save")}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
