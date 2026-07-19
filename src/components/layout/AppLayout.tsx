@@ -51,16 +51,19 @@ function NavItem({
   to,
   icon: Icon,
   label,
+  onClick,
 }: {
   to: string;
   icon: React.ComponentType<{ className?: string }>;
   label: string;
+  onClick?: () => void;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const active = pathname === to || pathname.startsWith(to + "/");
   return (
     <Link
       to={to}
+      onClick={onClick}
       className={cn(
         "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
         active
@@ -77,7 +80,7 @@ function NavItem({
 function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const { t, i18n } = useTranslation();
   return (
-    <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground" onClick={onNavigate}>
+    <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
       <div className="flex items-center gap-2 border-b border-sidebar-border px-4 py-5">
         <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground font-bold">
           ح
@@ -90,32 +93,32 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </div>
       <nav className="flex-1 space-y-0.5 overflow-y-auto p-3">
-        <NavItem to="/dashboard" icon={LayoutDashboard} label={t("nav.dashboard")} />
-        <NavItem to="/accounts" icon={BookText} label={t("nav.accounts")} />
-        <NavItem to="/journal" icon={BookOpen} label={t("nav.journal")} />
-        <NavItem to="/ledger" icon={BookOpen} label={t("nav.ledger")} />
-        <NavItem to="/parties" icon={Users} label={t("nav.parties")} />
-        <NavItem to="/sales" icon={ShoppingCart} label={t("nav.sales")} />
-        <NavItem to="/purchases" icon={ShoppingBag} label={t("nav.purchases")} />
-        <NavItem to="/payments" icon={Wallet} label={t("nav.payments")} />
+        <NavItem to="/dashboard" icon={LayoutDashboard} label={t("nav.dashboard")} onClick={onNavigate} />
+        <NavItem to="/accounts" icon={BookText} label={t("nav.accounts")} onClick={onNavigate} />
+        <NavItem to="/journal" icon={BookOpen} label={t("nav.journal")} onClick={onNavigate} />
+        <NavItem to="/ledger" icon={BookOpen} label={t("nav.ledger")} onClick={onNavigate} />
+        <NavItem to="/parties" icon={Users} label={t("nav.parties")} onClick={onNavigate} />
+        <NavItem to="/sales" icon={ShoppingCart} label={t("nav.sales")} onClick={onNavigate} />
+        <NavItem to="/purchases" icon={ShoppingBag} label={t("nav.purchases")} onClick={onNavigate} />
+        <NavItem to="/payments" icon={Wallet} label={t("nav.payments")} onClick={onNavigate} />
         <div className="px-3 pb-1 pt-4 text-xs uppercase tracking-wider text-sidebar-foreground/50">
           {t("nav.inventory")}
         </div>
-        <NavItem to="/items" icon={Package} label={t("nav.items")} />
-        <NavItem to="/stock-movements" icon={PackageSearch} label={t("nav.stockMovements")} />
+        <NavItem to="/items" icon={Package} label={t("nav.items")} onClick={onNavigate} />
+        <NavItem to="/stock-movements" icon={PackageSearch} label={t("nav.stockMovements")} onClick={onNavigate} />
         <div className="px-3 pb-1 pt-4 text-xs uppercase tracking-wider text-sidebar-foreground/50">
           {t("nav.reports")}
         </div>
-        <NavItem to="/reports/trial-balance" icon={FileText} label={t("nav.trialBalance")} />
-        <NavItem to="/reports/general-ledger" icon={FileText} label={t("nav.generalLedger")} />
-        <NavItem to="/reports/statements" icon={FileText} label={t("nav.statements")} />
+        <NavItem to="/reports/trial-balance" icon={FileText} label={t("nav.trialBalance")} onClick={onNavigate} />
+        <NavItem to="/reports/general-ledger" icon={FileText} label={t("nav.generalLedger")} onClick={onNavigate} />
+        <NavItem to="/reports/statements" icon={FileText} label={t("nav.statements")} onClick={onNavigate} />
         <div className="px-3 pb-1 pt-4 text-xs uppercase tracking-wider text-sidebar-foreground/50">
           {t("nav.settings")}
         </div>
-        <NavItem to="/settings/branches" icon={Building2} label={t("nav.branches")} />
-        <NavItem to="/settings/currencies" icon={Settings} label={t("nav.currencies")} />
-        <NavItem to="/settings/users" icon={Users} label={t("nav.users")} />
-        <NavItem to="/settings/audit" icon={FileText} label={t("nav.audit")} />
+        <NavItem to="/settings/branches" icon={Building2} label={t("nav.branches")} onClick={onNavigate} />
+        <NavItem to="/settings/currencies" icon={Settings} label={t("nav.currencies")} onClick={onNavigate} />
+        <NavItem to="/settings/users" icon={Users} label={t("nav.users")} onClick={onNavigate} />
+        <NavItem to="/settings/audit" icon={FileText} label={t("nav.audit")} onClick={onNavigate} />
       </nav>
     </div>
   );

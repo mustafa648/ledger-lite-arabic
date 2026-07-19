@@ -30,28 +30,10 @@ function AuthPage() {
 
   const signIn = async () => {
     setBusy(true);
-    // Local hardcoded admin bypass — works even if backend auth is unreachable.
-    if (email.trim() === "admin@hisabati.com" && password === "admin123") {
-      try {
-        window.localStorage.setItem("auth_bypass", "1");
-      } catch {}
-      setBusy(false);
-      navigate({ to: "/dashboard", replace: true });
-      return;
-    }
-    let { error } = await supabase.auth.signInWithPassword({ email, password });
-    // Bootstrap the default admin account on first sign-in.
-    if (error && email === "admin@hisabati.com" && password === "admin123") {
-      const up = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { full_name: "Admin" } },
-      });
-      if (!up.error) {
-        const retry = await supabase.auth.signInWithPassword({ email, password });
-        error = retry.error;
-      }
-    }
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
     setBusy(false);
     if (error) {
       toast.error(
@@ -62,17 +44,10 @@ function AuthPage() {
     navigate({ to: "/dashboard", replace: true });
   };
 
-  const skipAuth = () => {
-    try {
-      window.localStorage.setItem("auth_bypass", "1");
-    } catch {}
-    navigate({ to: "/dashboard", replace: true });
-  };
-
   const signUp = async () => {
     setBusy(true);
     const { error } = await supabase.auth.signUp({
-      email,
+      email: email.trim(),
       password,
       options: {
         data: { full_name: name },
@@ -80,8 +55,17 @@ function AuthPage() {
       },
     });
     setBusy(false);
-    if (error) toast.error(error.message);
-    else toast.success(i18n.language === "ar" ? "تم إنشاء الحساب بنجاح" : "Account created");
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(i18n.language === "ar" ? "تم إنشاء الحساب بنجاح" : "Account created");
+    // Auto sign-in if email confirmation is disabled
+    const { error: signInErr } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    if (!signInErr) navigate({ to: "/dashboard", replace: true });
   };
 
   const google = async () => {
@@ -168,14 +152,6 @@ function AuthPage() {
                 </div>
                 <Button variant="outline" className="w-full" onClick={google}>
                   {t("auth.google")}
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="w-full"
-                  onClick={skipAuth}
-                >
-                  تخطي تسجيل الدخول (تجريب)
                 </Button>
               </CardContent>
             </Tabs>
