@@ -10,21 +10,19 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthedShell() {
   const { session, loading } = useAuth();
   const navigate = useNavigate();
-  const bypass =
-    typeof window !== "undefined" && window.localStorage.getItem("auth_bypass") === "1";
 
   useEffect(() => {
-    if (!loading && !session && !bypass) navigate({ to: "/auth", replace: true });
-  }, [loading, session, bypass, navigate]);
+    if (!loading && !session) navigate({ to: "/auth", replace: true });
+  }, [loading, session, navigate]);
 
-  if (loading && !bypass) {
+  if (loading) {
     return (
       <div className="grid min-h-screen place-items-center text-muted-foreground">
         <div className="animate-pulse text-sm">…</div>
       </div>
     );
   }
-  if (!session && !bypass) return null;
+  if (!session) return null;
   return <AppLayout />;
 }
 
