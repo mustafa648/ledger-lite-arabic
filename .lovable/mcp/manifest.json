@@ -1,0 +1,252 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.2",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://idhlzvwyylzgdvkdlxri.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "harmony-books",
+      "version": "0.1.0",
+      "title": "Harmony Books"
+    },
+    "tools": [
+      {
+        "name": "list_accounts",
+        "title": "List chart of accounts",
+        "description": "List accounts from the chart of accounts, optionally filtered by type or a text search on code/name.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "search": {
+              "description": "Text to match against account code or name.",
+              "type": "string"
+            },
+            "type": {
+              "description": "Account type filter.",
+              "type": "string",
+              "enum": [
+                "asset",
+                "liability",
+                "equity",
+                "revenue",
+                "expense"
+              ]
+            },
+            "limit": {
+              "description": "Max rows to return, default 50.",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_parties",
+        "title": "List customers and suppliers",
+        "description": "List customers and suppliers (parties), optionally filtered by type or name/code search.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "search": {
+              "description": "Text to match against party name, code, phone or email.",
+              "type": "string"
+            },
+            "type": {
+              "description": "Party type filter.",
+              "type": "string",
+              "enum": [
+                "customer",
+                "supplier",
+                "both"
+              ]
+            },
+            "limit": {
+              "description": "Max rows to return, default 50.",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_party",
+        "title": "Create a customer or supplier",
+        "description": "Create a new customer or supplier record in the accounting system.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Display name of the customer or supplier."
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "customer",
+                "supplier",
+                "both"
+              ],
+              "description": "Whether this party is a customer, supplier, or both."
+            },
+            "phone": {
+              "description": "Contact phone number.",
+              "type": "string"
+            },
+            "email": {
+              "description": "Contact email address.",
+              "type": "string"
+            },
+            "address": {
+              "description": "Postal address.",
+              "type": "string"
+            },
+            "currency_code": {
+              "description": "Currency code, e.g. YER or USD. Defaults to the system base currency.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "type"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_items",
+        "title": "List inventory items",
+        "description": "List inventory items with stock on hand, average cost and sale price.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "search": {
+              "description": "Text to match against item name or SKU.",
+              "type": "string"
+            },
+            "only_in_stock": {
+              "description": "When true, return only items with quantity on hand greater than zero.",
+              "type": "boolean"
+            },
+            "limit": {
+              "description": "Max rows to return, default 50.",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_invoices",
+        "title": "List sales or purchase invoices",
+        "description": "List sales or purchase invoices with totals, status and dates.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "sales",
+                "purchase"
+              ],
+              "description": "Which invoice ledger to read."
+            },
+            "status": {
+              "description": "Filter by invoice status.",
+              "type": "string",
+              "enum": [
+                "draft",
+                "posted",
+                "cancelled"
+              ]
+            },
+            "from_date": {
+              "description": "Earliest invoice date, ISO format YYYY-MM-DD.",
+              "type": "string"
+            },
+            "to_date": {
+              "description": "Latest invoice date, ISO format YYYY-MM-DD.",
+              "type": "string"
+            },
+            "limit": {
+              "description": "Max rows to return, default 50.",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "kind"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "trial_balance",
+        "title": "Trial balance",
+        "description": "Aggregate posted journal lines into a trial balance per account for an optional date range.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "from_date": {
+              "description": "Start date, ISO format YYYY-MM-DD.",
+              "type": "string"
+            },
+            "to_date": {
+              "description": "End date, ISO format YYYY-MM-DD.",
+              "type": "string"
+            }
+          }
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
