@@ -13,20 +13,40 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { toast } from "sonner";
 import { Languages } from "lucide-react";
 
-export const Route = createFileRoute("/auth")({ component: AuthPage });
+export const Route = createFileRoute("/auth")({
+  validateSearch: (s: Record<string, unknown>): { next?: string } =>
+    typeof s.next === "string" ? { next: s.next } : {},
+  component: AuthPage,
+});
+
+// Only allow same-origin relative paths as a post-login redirect target.
+function safeNext(next?: string) {
+  return next && next.startsWith("/") && !next.startsWith("//") ? next : undefined;
+}
 
 function AuthPage() {
   const { t, i18n } = useTranslation();
   const { session, loading } = useAuth();
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
+  const nextPath = safeNext(next);
+
+  const goNext = () => {
+    if (nextPath) {
+      window.location.href = nextPath;
+      return;
+    }
+    navigate({ to: "/dashboard", replace: true });
+  };
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!loading && session) navigate({ to: "/dashboard", replace: true });
-  }, [loading, session, navigate]);
+    if (!loading && session) goNext();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, session, navigate, nextPath]);
 
   const signIn = async () => {
     setBusy(true);
@@ -41,7 +61,7 @@ function AuthPage() {
       );
       return;
     }
-    navigate({ to: "/dashboard", replace: true });
+    goNext();
   };
 
   const signUp = async () => {
@@ -51,7 +71,7 @@ function AuthPage() {
       password,
       options: {
         data: { full_name: name },
-        emailRedirectTo: `${window.location.origin}/dashboard`,
+        emailRedirectTo: `${window.location.origin}${nextPath ?? "/dashboard"}`,
       },
     });
     setBusy(false);
@@ -65,11 +85,11 @@ function AuthPage() {
       email: email.trim(),
       password,
     });
-    if (!signInErr) navigate({ to: "/dashboard", replace: true });
+    if (!signInErr) goNext();
   };
 
   const google = async () => {
-    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}${nextPath ?? ""}` });
     if (r.error) toast.error(String((r.error as Error)?.message ?? r.error));
   };
 
