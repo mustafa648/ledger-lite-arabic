@@ -37,7 +37,7 @@ function AuthPage() {
       window.location.href = nextPath;
       return;
     }
-    goNext();
+    navigate({ to: "/dashboard", replace: true });
   };
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -62,7 +62,7 @@ function AuthPage() {
       );
       return;
     }
-    navigate({ to: "/dashboard", replace: true });
+    goNext();
   };
 
   const signUp = async () => {
