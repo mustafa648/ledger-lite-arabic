@@ -1037,6 +1037,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_admin: { Args: { _user_id: string }; Returns: boolean }
+      can_write: { Args: { _user_id: string }; Returns: boolean }
       current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
@@ -1048,6 +1050,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_staff: { Args: { _user_id: string }; Returns: boolean }
       next_doc_number: {
         Args: { _branch_id: string; _doc_type: string; _prefix?: string }
         Returns: string
