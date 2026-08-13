@@ -2,7 +2,7 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
 const ar = {
-  app: { name: "نظام المحاسبة", tagline: "محاسبة احترافية بمعايير عالمية" },
+  app: { name: "سَنَد المحاسبي", tagline: "محاسبة احترافية بمعايير عالمية" },
   nav: {
     dashboard: "لوحة التحكم",
     accounts: "دليل الحسابات",
@@ -197,7 +197,7 @@ const ar = {
 };
 
 const en = {
-  app: { name: "Accounting System", tagline: "Professional accounting, done right" },
+  app: { name: "Sanad ERP", tagline: "Professional accounting, done right" },
   nav: {
     dashboard: "Dashboard",
     accounts: "Chart of Accounts",
