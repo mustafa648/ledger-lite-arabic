@@ -15,6 +15,7 @@ import "../lib/i18n";
 import i18n from "../lib/i18n";
 import { AuthProvider } from "../hooks/use-auth";
 import { Toaster } from "../components/ui/sonner";
+import { registerServiceWorker } from "../lib/register-sw";
 
 function NotFoundComponent() {
   return (
@@ -81,6 +82,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "theme-color", content: "#0b1d3a" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "المحاسبة" },
       { title: "نظام المحاسبة | Accounting System" },
       { name: "description", content: "نظام محاسبة احترافي متكامل بالقيد المزدوج ودعم كامل للعربية" },
       { property: "og:title", content: "نظام المحاسبة | Accounting System" },
@@ -97,7 +102,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
+      { rel: "manifest", href: "/manifest.json" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
@@ -138,6 +145,7 @@ function RootComponent() {
     if (window.localStorage.getItem("theme") === "dark") {
       document.documentElement.classList.add("dark");
     }
+    registerServiceWorker();
   }, []);
 
   return (
