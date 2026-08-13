@@ -83,7 +83,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
       <div className="flex items-center gap-2 border-b border-sidebar-border px-4 py-5">
         <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground font-bold">
-          ح
+          س
         </div>
         <div className="min-w-0">
           <div className="truncate text-sm font-semibold">{t("app.name")}</div>

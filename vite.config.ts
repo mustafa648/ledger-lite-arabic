@@ -25,8 +25,8 @@ export default defineConfig({
         manifestFilename: "manifest.json",
         manifest: {
           id: "/",
-          name: "نظام المحاسبة | Accounting System",
-          short_name: "المحاسبة",
+          name: "نظام سَنَد المحاسبي | Sanad ERP",
+          short_name: "سَنَد",
           description: "نظام محاسبة احترافي متكامل بالقيد المزدوج ودعم كامل للعربية",
           lang: "ar",
           dir: "rtl",

@@ -98,7 +98,7 @@ function AuthPage() {
       <div className="hidden flex-col justify-between bg-sidebar p-10 text-sidebar-foreground lg:flex">
         <div className="flex items-center gap-3">
           <div className="grid h-10 w-10 place-items-center rounded-md bg-sidebar-primary text-lg font-bold text-sidebar-primary-foreground">
-            ح
+            س
           </div>
           <div className="text-lg font-semibold">{t("app.name")}</div>
         </div>
