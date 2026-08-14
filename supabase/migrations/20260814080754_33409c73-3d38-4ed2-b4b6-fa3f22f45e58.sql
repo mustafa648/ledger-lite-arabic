@@ -1,0 +1,2 @@
+ALTER TABLE public.sales_invoices ADD COLUMN IF NOT EXISTS payment_method text NOT NULL DEFAULT 'credit';
+ALTER TABLE public.purchase_invoices ADD COLUMN IF NOT EXISTS payment_method text NOT NULL DEFAULT 'credit';

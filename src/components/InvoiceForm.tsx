@@ -22,8 +22,10 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { formatMoney } from "@/lib/format";
+import { enqueueInvoice } from "@/lib/offline-queue";
 
 type Kind = "sales" | "purchases";
+type PaymentMethod = "cash" | "credit" | "bank";
 type Line = { description: string; qty: number; unit_price: number; tax_rate: number; account_id: string; item_id: string };
 
 export function InvoiceForm({ kind }: { kind: Kind }) {
@@ -58,6 +60,11 @@ export function InvoiceForm({ kind }: { kind: Kind }) {
     queryKey: ["items-active"],
     queryFn: async () => (await supabase.from("items").select("id, sku, name, name_en, sale_price, average_cost, is_service").eq("is_active", true).order("sku")).data ?? [],
   });
+  const cashAccounts = useQuery({
+    queryKey: ["cash-bank-accounts"],
+    queryFn: async () =>
+      (await supabase.from("accounts").select("id, code").in("code", ["1101", "1102"])).data ?? [],
+  });
 
   const [invoiceDate, setInvoiceDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [dueDate, setDueDate] = useState<string>("");
@@ -65,6 +72,7 @@ export function InvoiceForm({ kind }: { kind: Kind }) {
   const [branchId, setBranchId] = useState("");
   const [partyId, setPartyId] = useState("");
   const [currency, setCurrency] = useState("YER");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("credit");
   const [lines, setLines] = useState<Line[]>([{ description: "", qty: 1, unit_price: 0, tax_rate: 0, account_id: "", item_id: "" }]);
 
   const [partyDlg, setPartyDlg] = useState<{ open: boolean; query: string }>({ open: false, query: "" });
@@ -91,6 +99,7 @@ export function InvoiceForm({ kind }: { kind: Kind }) {
   const save = useMutation({
     mutationFn: async (post: boolean) => {
       if (!partyId || !branchId) throw new Error("Missing required fields");
+      if (!paymentMethod) throw new Error(t("invoice.paymentMethod"));
       const invRow: Record<string, any> = {
         branch_id: branchId,
         [partyField]: partyId,
@@ -101,20 +110,55 @@ export function InvoiceForm({ kind }: { kind: Kind }) {
         tax: totals.tax,
         total: totals.total,
         notes,
+        payment_method: paymentMethod,
+        paid_amount: paymentMethod === "credit" ? 0 : totals.total,
       };
+      const buildLines = (invoiceId: string | null) =>
+        lines
+          .filter((l) => l.description && l.qty > 0)
+          .map((l, i) => ({
+            ...(invoiceId ? { invoice_id: invoiceId } : {}),
+            description: l.description,
+            qty: l.qty,
+            unit_price: l.unit_price,
+            tax_rate: l.tax_rate,
+            line_total: Number(l.qty) * Number(l.unit_price),
+            [accountField]: l.account_id || null,
+            item_id: l.item_id || null,
+            line_no: i + 1,
+          }));
+
+      const cashAccountId =
+        paymentMethod === "credit"
+          ? null
+          : ((cashAccounts.data ?? []).find((a: any) => a.code === (paymentMethod === "cash" ? "1101" : "1102"))?.id ??
+            null);
+
+      const paymentRow =
+        paymentMethod === "credit" || !cashAccountId
+          ? null
+          : {
+              branch_id: branchId,
+              party_id: partyId,
+              direction: kind === "sales" ? "receipt" : "payment",
+              payment_date: invoiceDate,
+              amount: totals.total,
+              currency_code: currency,
+              cash_account_id: cashAccountId,
+              method: paymentMethod === "cash" ? "cash" : "bank",
+              notes,
+            };
+
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        const offlineLines = buildLines(null);
+        if (offlineLines.length === 0) throw new Error("No lines");
+        enqueueInvoice({ kind, invoice: invRow, lines: offlineLines, post, payment: paymentRow });
+        return "offline";
+      }
+
       const { data: inv, error } = await (supabase.from(table as any) as any).insert(invRow).select().single();
       if (error) throw error;
-      const lineRows = lines.filter((l) => l.description && (l.qty > 0)).map((l, i) => ({
-        invoice_id: inv.id,
-        description: l.description,
-        qty: l.qty,
-        unit_price: l.unit_price,
-        tax_rate: l.tax_rate,
-        line_total: Number(l.qty) * Number(l.unit_price),
-        [accountField]: l.account_id || null,
-        item_id: l.item_id || null,
-        line_no: i + 1,
-      }));
+      const lineRows = buildLines(inv.id);
       if (lineRows.length === 0) throw new Error("No lines");
       const ins = await (supabase.from(linesTable as any) as any).insert(lineRows);
       if (ins.error) throw ins.error;
@@ -122,10 +166,18 @@ export function InvoiceForm({ kind }: { kind: Kind }) {
         const { error: pErr } = await supabase.rpc(rpc as any, { _invoice_id: inv.id });
         if (pErr) throw pErr;
       }
+      if (paymentRow) {
+        const { data: pay, error: payErr } = await supabase.from("payments").insert(paymentRow as any).select().single();
+        if (payErr) throw payErr;
+        if (post) {
+          const { error: postPayErr } = await supabase.rpc("post_payment", { _payment_id: pay.id });
+          if (postPayErr) throw postPayErr;
+        }
+      }
       return inv.id as string;
     },
-    onSuccess: () => {
-      toast.success(t("common.save"));
+    onSuccess: (res) => {
+      toast.success(res === "offline" ? t("common.offlineQueued") : t("common.save"));
       nav({ to: kind === "sales" ? "/sales" : "/purchases" });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -171,6 +223,19 @@ export function InvoiceForm({ kind }: { kind: Kind }) {
               <Select value={currency} onValueChange={setCurrency}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent><SelectItem value="YER">YER</SelectItem><SelectItem value="SAR">SAR</SelectItem><SelectItem value="USD">USD</SelectItem></SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>
+                {t("invoice.paymentMethod")} <span className="text-destructive">*</span>
+              </Label>
+              <Select value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as PaymentMethod)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cash">{t("invoice.pmCash")}</SelectItem>
+                  <SelectItem value="credit">{t("invoice.pmCredit")}</SelectItem>
+                  <SelectItem value="bank">{t("invoice.pmBank")}</SelectItem>
+                </SelectContent>
               </Select>
             </div>
           </div>
