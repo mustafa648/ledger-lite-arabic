@@ -18,10 +18,13 @@ import {
   Building2,
   Package,
   PackageSearch,
+  WifiOff,
+  RefreshCw,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useOnline } from "@/hooks/use-online";
 import { setLocale } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -128,6 +131,7 @@ export default function AppLayout() {
   const { t, i18n } = useTranslation();
   const { theme, toggle } = useTheme();
   const { user, role } = useAuth();
+  const { online, pending } = useOnline();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const isRtl = i18n.language === "ar";
@@ -165,6 +169,19 @@ export default function AppLayout() {
             </Sheet>
 
             <div className="flex-1" />
+
+            {!online && (
+              <span className="flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive">
+                <WifiOff className="h-3.5 w-3.5" />
+                {t("common.offline")}
+              </span>
+            )}
+            {online && pending > 0 && (
+              <span className="flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
+                <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                {pending}
+              </span>
+            )}
 
             <Button variant="ghost" size="icon" onClick={toggle} title={t("common.theme")}>
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
