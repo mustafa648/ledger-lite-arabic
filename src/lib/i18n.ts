@@ -26,6 +26,10 @@ const ar = {
     inventory: "المخزون",
   },
   common: {
+    offline: "غير متصل",
+    offlineQueued: "لا يوجد اتصال — تم حفظ الفاتورة محلياً وستُرسل عند عودة الإنترنت",
+    offlineSynced: "تمت مزامنة البيانات المحفوظة محلياً",
+    pendingSync: "بانتظار المزامنة",
     signIn: "تسجيل الدخول",
     signOut: "تسجيل الخروج",
     signUp: "إنشاء حساب",
@@ -173,6 +177,10 @@ const ar = {
     invoiceNo: "رقم الفاتورة",
     lines: "بنود الفاتورة",
     notes: "ملاحظات",
+    paymentMethod: "طريقة الدفع",
+    pmCash: "نقداً",
+    pmCredit: "آجل",
+    pmBank: "تحويل بنكي / شبكة",
   },
   reports: {
     title: "التقارير",
@@ -221,6 +229,10 @@ const en = {
     inventory: "Inventory",
   },
   common: {
+    offline: "Offline",
+    offlineQueued: "No connection — invoice saved locally and will sync when you are back online",
+    offlineSynced: "Offline data synced",
+    pendingSync: "Pending sync",
     signIn: "Sign In",
     signOut: "Sign Out",
     signUp: "Sign Up",
@@ -362,6 +374,10 @@ const en = {
     invoiceNo: "Invoice No.",
     lines: "Invoice Lines",
     notes: "Notes",
+    paymentMethod: "Payment Method",
+    pmCash: "Cash",
+    pmCredit: "On Account",
+    pmBank: "Bank Transfer / Card",
   },
   reports: {
     title: "Reports",
