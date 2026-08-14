@@ -704,6 +704,7 @@ export type Database = {
           journal_entry_id: string | null
           notes: string | null
           paid_amount: number
+          payment_method: string
           status: Database["public"]["Enums"]["doc_status"]
           subtotal: number
           supplier_id: string
@@ -725,6 +726,7 @@ export type Database = {
           journal_entry_id?: string | null
           notes?: string | null
           paid_amount?: number
+          payment_method?: string
           status?: Database["public"]["Enums"]["doc_status"]
           subtotal?: number
           supplier_id: string
@@ -746,6 +748,7 @@ export type Database = {
           journal_entry_id?: string | null
           notes?: string | null
           paid_amount?: number
+          payment_method?: string
           status?: Database["public"]["Enums"]["doc_status"]
           subtotal?: number
           supplier_id?: string
@@ -861,6 +864,7 @@ export type Database = {
           journal_entry_id: string | null
           notes: string | null
           paid_amount: number
+          payment_method: string
           status: Database["public"]["Enums"]["doc_status"]
           subtotal: number
           tax: number
@@ -881,6 +885,7 @@ export type Database = {
           journal_entry_id?: string | null
           notes?: string | null
           paid_amount?: number
+          payment_method?: string
           status?: Database["public"]["Enums"]["doc_status"]
           subtotal?: number
           tax?: number
@@ -901,6 +906,7 @@ export type Database = {
           journal_entry_id?: string | null
           notes?: string | null
           paid_amount?: number
+          payment_method?: string
           status?: Database["public"]["Enums"]["doc_status"]
           subtotal?: number
           tax?: number
@@ -1124,6 +1130,7 @@ export type Database = {
           journal_entry_id: string | null
           notes: string | null
           paid_amount: number
+          payment_method: string
           status: Database["public"]["Enums"]["doc_status"]
           subtotal: number
           supplier_id: string
@@ -1155,6 +1162,7 @@ export type Database = {
           journal_entry_id: string | null
           notes: string | null
           paid_amount: number
+          payment_method: string
           status: Database["public"]["Enums"]["doc_status"]
           subtotal: number
           tax: number
