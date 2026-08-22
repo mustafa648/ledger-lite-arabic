@@ -20,6 +20,7 @@ import {
   PackageSearch,
   WifiOff,
   RefreshCw,
+  CloudUpload,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -109,6 +110,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         </div>
         <NavItem to="/items" icon={Package} label={t("nav.items")} onClick={onNavigate} />
         <NavItem to="/stock-movements" icon={PackageSearch} label={t("nav.stockMovements")} onClick={onNavigate} />
+        <NavItem to="/offline-queue" icon={CloudUpload} label={t("nav.offlineQueue")} onClick={onNavigate} />
         <div className="px-3 pb-1 pt-4 text-xs uppercase tracking-wider text-sidebar-foreground/50">
           {t("nav.reports")}
         </div>
@@ -176,11 +178,15 @@ export default function AppLayout() {
                 {t("common.offline")}
               </span>
             )}
-            {online && pending > 0 && (
-              <span className="flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
-                <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+            {pending > 0 && (
+              <Link
+                to="/offline-queue"
+                className="flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground hover:bg-accent"
+                title={t("common.pendingSync")}
+              >
+                <RefreshCw className={cn("h-3.5 w-3.5", online && "animate-spin")} />
                 {pending}
-              </span>
+              </Link>
             )}
 
             <Button variant="ghost" size="icon" onClick={toggle} title={t("common.theme")}>

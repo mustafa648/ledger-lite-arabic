@@ -15,6 +15,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedStockMovementsRouteImport } from './routes/_authenticated/stock-movements'
 import { Route as AuthenticatedPartiesRouteImport } from './routes/_authenticated/parties'
+import { Route as AuthenticatedOfflineQueueRouteImport } from './routes/_authenticated/offline-queue'
 import { Route as AuthenticatedLedgerRouteImport } from './routes/_authenticated/ledger'
 import { Route as AuthenticatedItemsRouteImport } from './routes/_authenticated/items'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -70,6 +71,12 @@ const AuthenticatedPartiesRoute = AuthenticatedPartiesRouteImport.update({
   path: '/parties',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedOfflineQueueRoute =
+  AuthenticatedOfflineQueueRouteImport.update({
+    id: '/offline-queue',
+    path: '/offline-queue',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLedgerRoute = AuthenticatedLedgerRouteImport.update({
   id: '/ledger',
   path: '/ledger',
@@ -216,6 +223,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/items': typeof AuthenticatedItemsRoute
   '/ledger': typeof AuthenticatedLedgerRoute
+  '/offline-queue': typeof AuthenticatedOfflineQueueRoute
   '/parties': typeof AuthenticatedPartiesRoute
   '/stock-movements': typeof AuthenticatedStockMovementsRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -247,6 +255,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/items': typeof AuthenticatedItemsRoute
   '/ledger': typeof AuthenticatedLedgerRoute
+  '/offline-queue': typeof AuthenticatedOfflineQueueRoute
   '/parties': typeof AuthenticatedPartiesRoute
   '/stock-movements': typeof AuthenticatedStockMovementsRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -280,6 +289,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/items': typeof AuthenticatedItemsRoute
   '/_authenticated/ledger': typeof AuthenticatedLedgerRoute
+  '/_authenticated/offline-queue': typeof AuthenticatedOfflineQueueRoute
   '/_authenticated/parties': typeof AuthenticatedPartiesRoute
   '/_authenticated/stock-movements': typeof AuthenticatedStockMovementsRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -313,6 +323,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/items'
     | '/ledger'
+    | '/offline-queue'
     | '/parties'
     | '/stock-movements'
     | '/.lovable/oauth/consent'
@@ -344,6 +355,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/items'
     | '/ledger'
+    | '/offline-queue'
     | '/parties'
     | '/stock-movements'
     | '/.lovable/oauth/consent'
@@ -376,6 +388,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/items'
     | '/_authenticated/ledger'
+    | '/_authenticated/offline-queue'
     | '/_authenticated/parties'
     | '/_authenticated/stock-movements'
     | '/.lovable/oauth/consent'
@@ -451,6 +464,13 @@ declare module '@tanstack/react-router' {
       path: '/parties'
       fullPath: '/parties'
       preLoaderRoute: typeof AuthenticatedPartiesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/offline-queue': {
+      id: '/_authenticated/offline-queue'
+      path: '/offline-queue'
+      fullPath: '/offline-queue'
+      preLoaderRoute: typeof AuthenticatedOfflineQueueRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/ledger': {
@@ -629,6 +649,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedItemsRoute: typeof AuthenticatedItemsRoute
   AuthenticatedLedgerRoute: typeof AuthenticatedLedgerRoute
+  AuthenticatedOfflineQueueRoute: typeof AuthenticatedOfflineQueueRoute
   AuthenticatedPartiesRoute: typeof AuthenticatedPartiesRoute
   AuthenticatedStockMovementsRoute: typeof AuthenticatedStockMovementsRoute
   AuthenticatedJournalIdRoute: typeof AuthenticatedJournalIdRoute
@@ -654,6 +675,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedItemsRoute: AuthenticatedItemsRoute,
   AuthenticatedLedgerRoute: AuthenticatedLedgerRoute,
+  AuthenticatedOfflineQueueRoute: AuthenticatedOfflineQueueRoute,
   AuthenticatedPartiesRoute: AuthenticatedPartiesRoute,
   AuthenticatedStockMovementsRoute: AuthenticatedStockMovementsRoute,
   AuthenticatedJournalIdRoute: AuthenticatedJournalIdRoute,
