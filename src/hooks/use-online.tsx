@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { readQueue, syncQueue } from "@/lib/offline-queue";
+import { pendingCount, syncQueue } from "@/lib/offline-queue";
 
 export function useOnline() {
   const [online, setOnline] = useState(true);
   const [pending, setPending] = useState(0);
 
   useEffect(() => {
-    const refresh = () => setPending(readQueue().length);
+    const refresh = () => setPending(pendingCount());
     const up = async () => {
       setOnline(true);
       await syncQueue();
