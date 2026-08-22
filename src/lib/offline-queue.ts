@@ -2,7 +2,49 @@ import { supabase } from "@/integrations/supabase/client";
 
 const KEY = "sanad_offline_invoices";
 
-export type QueueStatus = "pending" | "failed" | "conflict";
+export type QueueStatus = "pending" | "failed" | "conflict" | "manual";
+
+/** Retry policy for background sync. */
+export const MAX_ATTEMPTS = 6;
+export const MAX_AGE_MS = 24 * 60 * 60 * 1000; // after 24h a stuck item needs a human
+const BACKOFF_MS = [5_000, 15_000, 60_000, 5 * 60_000, 15 * 60_000, 60 * 60_000];
+
+export type SyncLogEntry = {
+  id: string;
+  queueId: string;
+  clientRef: string;
+  kind: "sales" | "purchases";
+  at: string;
+  attempt: number;
+  result: "success" | "failed" | "conflict" | "manual" | "resolved";
+  message?: string | null;
+  trigger: "auto" | "manual";
+};
+
+const LOG_KEY = "sanad_sync_audit";
+const LOG_LIMIT = 300;
+
+export function readSyncLog(): SyncLogEntry[] {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(window.localStorage.getItem(LOG_KEY) ?? "[]") as SyncLogEntry[];
+  } catch {
+    return [];
+  }
+}
+
+export function clearSyncLog() {
+  window.localStorage.setItem(LOG_KEY, "[]");
+  window.dispatchEvent(new CustomEvent("sanad:queue-changed"));
+}
+
+function log(e: Omit<SyncLogEntry, "id" | "at">) {
+  if (typeof window === "undefined") return;
+  const rows = readSyncLog();
+  rows.unshift({ ...e, id: crypto.randomUUID(), at: new Date().toISOString() });
+  window.localStorage.setItem(LOG_KEY, JSON.stringify(rows.slice(0, LOG_LIMIT)));
+  window.dispatchEvent(new CustomEvent("sanad:queue-changed"));
+}
 
 export type QueuedInvoice = {
   id: string;
@@ -18,6 +60,8 @@ export type QueuedInvoice = {
   attempts: number;
   lastError?: string | null;
   lastTriedAt?: string | null;
+  /** Epoch ms; background sync skips the entry until this time (exponential backoff). */
+  nextAttemptAt?: number | null;
 };
 
 export function readQueue(): QueuedInvoice[] {
@@ -66,7 +110,22 @@ export function removeQueued(id: string) {
 }
 
 export function pendingCount() {
-  return readQueue().filter((e) => e.status !== "conflict").length;
+  return readQueue().length;
+}
+
+export function needsAttentionCount() {
+  return readQueue().filter((e) => e.status === "conflict" || e.status === "manual").length;
+}
+
+function isBlocked(e: QueuedInvoice) {
+  return e.status === "conflict" || e.status === "manual";
+}
+
+function escalate(entry: QueuedInvoice, status: QueueStatus): QueueStatus {
+  if (status !== "failed") return status;
+  const tooOld = Date.now() - new Date(entry.createdAt).getTime() > MAX_AGE_MS;
+  if (entry.attempts + 1 >= MAX_ATTEMPTS || tooOld) return "manual";
+  return "failed";
 }
 
 const DUPLICATE = "23505";
@@ -165,19 +224,15 @@ export async function syncQueue(): Promise<number> {
   let done = 0;
   try {
     for (const entry of readQueue()) {
-      if (entry.status === "conflict") continue; // wait for manual retry/delete
+      if (isBlocked(entry)) continue; // wait for a human decision
+      if (entry.nextAttemptAt && Date.now() < entry.nextAttemptAt) continue; // backoff
       try {
         await pushOne(entry);
         removeQueued(entry.id);
+        log({ queueId: entry.id, clientRef: entry.clientRef, kind: entry.kind, attempt: entry.attempts + 1, result: "success", trigger: "auto" });
         done += 1;
       } catch (err: any) {
-        const { status, message } = classify(err);
-        patch(entry.id, {
-          status,
-          attempts: entry.attempts + 1,
-          lastError: message,
-          lastTriedAt: new Date().toISOString(),
-        });
+        const status = recordFailure(entry, err, "auto");
         if (status === "failed") break; // transient — preserve order, retry later
       }
     }
@@ -197,13 +252,109 @@ export async function retryQueued(id: string): Promise<{ ok: boolean; error?: st
     removeQueued(id);
     return { ok: true };
   } catch (err: any) {
-    const { status, message } = classify(err);
-    patch(id, {
-      status,
-      attempts: entry.attempts + 1,
-      lastError: message,
-      lastTriedAt: new Date().toISOString(),
-    });
+    recordFailure(entry, err, "manual");
+    return { ok: false, error: err?.message ?? String(err) };
+  }
+}
+
+function recordFailure(entry: QueuedInvoice, err: any, trigger: "auto" | "manual"): QueueStatus {
+  const { status: raw, message } = classify(err);
+  const status = escalate(entry, raw);
+  const attempts = entry.attempts + 1;
+  patch(entry.id, {
+    status,
+    attempts,
+    lastError: message,
+    lastTriedAt: new Date().toISOString(),
+    nextAttemptAt:
+      status === "failed" ? Date.now() + (BACKOFF_MS[Math.min(attempts - 1, BACKOFF_MS.length - 1)] ?? 60_000) : null,
+  });
+  log({ queueId: entry.id, clientRef: entry.clientRef, kind: entry.kind, attempt: attempts, result: status === "manual" ? "manual" : status === "conflict" ? "conflict" : "failed", message, trigger });
+  return status;
+}
+
+export type RemoteSnapshot = {
+  invoice: Record<string, any> | null;
+  lines: Record<string, any>[];
+};
+
+/** Reads whatever the server already holds for this queued document. */
+export async function fetchRemote(entry: QueuedInvoice): Promise<RemoteSnapshot> {
+  const table = entry.kind === "sales" ? "sales_invoices" : "purchase_invoices";
+  const linesTable = entry.kind === "sales" ? "sales_invoice_lines" : "purchase_invoice_lines";
+  const { data } = await (supabase.from(table as any) as any)
+    .select("*")
+    .eq("client_ref", entry.clientRef)
+    .maybeSingle();
+  if (!data) return { invoice: null, lines: [] };
+  const { data: lines } = await (supabase.from(linesTable as any) as any)
+    .select("*")
+    .eq("invoice_id", data.id)
+    .order("line_no");
+  return { invoice: data, lines: lines ?? [] };
+}
+
+export type ConflictAction = "local" | "remote" | "merge";
+
+/**
+ * Applies the user's decision for a conflicted document.
+ * - local  : overwrite the server draft with the locally stored version, then post it.
+ * - remote : keep the server version and drop the local copy.
+ * - merge  : keep the server row, add any lines/payment it is missing, then post.
+ */
+export async function resolveConflict(
+  id: string,
+  action: ConflictAction,
+): Promise<{ ok: boolean; error?: string }> {
+  const entry = readQueue().find((e) => e.id === id);
+  if (!entry) return { ok: false, error: "not found" };
+
+  const table = entry.kind === "sales" ? "sales_invoices" : "purchase_invoices";
+  const linesTable = entry.kind === "sales" ? "sales_invoice_lines" : "purchase_invoice_lines";
+
+  try {
+    if (action === "remote") {
+      removeQueued(id);
+      log({ queueId: id, clientRef: entry.clientRef, kind: entry.kind, attempt: entry.attempts, result: "resolved", message: "kept server version", trigger: "manual" });
+      return { ok: true };
+    }
+
+    const remote = await fetchRemote(entry);
+
+    if (action === "local" && remote.invoice) {
+      if (remote.invoice.status === "posted") {
+        return { ok: false, error: "المستند مُرحّل على الخادم ولا يمكن استبداله" };
+      }
+      const upd = await (supabase.from(table as any) as any)
+        .update(entry.invoice)
+        .eq("id", remote.invoice.id);
+      if (upd.error) throw upd.error;
+      const del = await (supabase.from(linesTable as any) as any).delete().eq("invoice_id", remote.invoice.id);
+      if (del.error) throw del.error;
+      const ins = await (supabase.from(linesTable as any) as any).insert(
+        entry.lines.map((l) => ({ ...l, invoice_id: remote.invoice!.id })),
+      );
+      if (ins.error) throw ins.error;
+    }
+
+    if (action === "merge" && remote.invoice && remote.lines.length === 0 && entry.lines.length > 0) {
+      const ins = await (supabase.from(linesTable as any) as any).insert(
+        entry.lines.map((l) => ({ ...l, invoice_id: remote.invoice!.id })),
+      );
+      if (ins.error) throw ins.error;
+    }
+
+    // clear the block, then let the normal idempotent push finish the job
+    patch(id, { status: "pending", lastError: null, nextAttemptAt: null });
+    const r = await retryQueued(id);
+    if (r.ok) {
+      log({ queueId: id, clientRef: entry.clientRef, kind: entry.kind, attempt: entry.attempts + 1, result: "resolved", message: action === "local" ? "local version applied" : "merged with server", trigger: "manual" });
+    }
+    return r;
+  } catch (err: any) {
+    const message = err?.message ?? String(err);
+    patch(id, { status: "conflict", lastError: message, lastTriedAt: new Date().toISOString() });
+    log({ queueId: id, clientRef: entry.clientRef, kind: entry.kind, attempt: entry.attempts, result: "conflict", message, trigger: "manual" });
     return { ok: false, error: message };
   }
 }
