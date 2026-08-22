@@ -655,6 +655,7 @@ export type Database = {
           amount: number
           branch_id: string
           cash_account_id: string
+          client_ref: string | null
           company_id: string
           created_at: string
           created_by: string | null
@@ -676,6 +677,7 @@ export type Database = {
           amount: number
           branch_id: string
           cash_account_id: string
+          client_ref?: string | null
           company_id?: string
           created_at?: string
           created_by?: string | null
@@ -697,6 +699,7 @@ export type Database = {
           amount?: number
           branch_id?: string
           cash_account_id?: string
+          client_ref?: string | null
           company_id?: string
           created_at?: string
           created_by?: string | null
@@ -867,6 +870,7 @@ export type Database = {
       purchase_invoices: {
         Row: {
           branch_id: string
+          client_ref: string | null
           company_id: string
           created_at: string
           created_by: string | null
@@ -890,6 +894,7 @@ export type Database = {
         }
         Insert: {
           branch_id: string
+          client_ref?: string | null
           company_id?: string
           created_at?: string
           created_by?: string | null
@@ -913,6 +918,7 @@ export type Database = {
         }
         Update: {
           branch_id?: string
+          client_ref?: string | null
           company_id?: string
           created_at?: string
           created_by?: string | null
@@ -1036,6 +1042,7 @@ export type Database = {
       sales_invoices: {
         Row: {
           branch_id: string
+          client_ref: string | null
           company_id: string
           created_at: string
           created_by: string | null
@@ -1058,6 +1065,7 @@ export type Database = {
         }
         Insert: {
           branch_id: string
+          client_ref?: string | null
           company_id?: string
           created_at?: string
           created_by?: string | null
@@ -1080,6 +1088,7 @@ export type Database = {
         }
         Update: {
           branch_id?: string
+          client_ref?: string | null
           company_id?: string
           created_at?: string
           created_by?: string | null
@@ -1309,6 +1318,7 @@ export type Database = {
           amount: number
           branch_id: string
           cash_account_id: string
+          client_ref: string | null
           company_id: string
           created_at: string
           created_by: string | null
@@ -1337,6 +1347,7 @@ export type Database = {
         Args: { _invoice_id: string }
         Returns: {
           branch_id: string
+          client_ref: string | null
           company_id: string
           created_at: string
           created_by: string | null
@@ -1369,6 +1380,7 @@ export type Database = {
         Args: { _invoice_id: string }
         Returns: {
           branch_id: string
+          client_ref: string | null
           company_id: string
           created_at: string
           created_by: string | null
